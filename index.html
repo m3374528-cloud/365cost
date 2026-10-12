@@ -167,23 +167,11 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--gray-100); col
         <!-- 자재비 -->
         <tr><td>자재비</td><td><div class="amount-cell"><span class="amount-text" id="c-material"></span></div></td></tr>
 
-        <!-- 폐기물처리비 -->
-        <tr><td>폐기물처리비</td><td><div class="amount-cell">
-          <span class="amount-text" id="c-waste"></span><span id="badge-waste"></span>
-          <input class="edit-input" id="i-waste" type="number" />
-          <button class="icon-btn" id="edit-waste" onclick="startEdit('waste')">✏️ 수정</button>
-          <button class="icon-btn save-btn" id="s-waste" onclick="saveEdit('waste','폐기물처리비')">저장</button>
-          <button class="icon-btn cancel-btn" id="x-waste" onclick="cancelEdit('waste')">취소</button>
-        </div></td></tr>
+        <!-- 폐기물처리비 (외주매입 실측, 확정) -->
+        <tr><td>폐기물처리비</td><td><div class="amount-cell"><span class="amount-text" id="c-waste"></span></div></td></tr>
 
-        <!-- 운반비 -->
-        <tr><td>운반비</td><td><div class="amount-cell">
-          <span class="amount-text" id="c-transport"></span><span id="badge-transport"></span>
-          <input class="edit-input" id="i-transport" type="number" />
-          <button class="icon-btn" id="edit-transport" onclick="startEdit('transport')">✏️ 수정</button>
-          <button class="icon-btn save-btn" id="s-transport" onclick="saveEdit('transport','운반비')">저장</button>
-          <button class="icon-btn cancel-btn" id="x-transport" onclick="cancelEdit('transport')">취소</button>
-        </div></td></tr>
+        <!-- 운반비 (외주매입 실측, 확정) -->
+        <tr><td>운반비</td><td><div class="amount-cell"><span class="amount-text" id="c-transport"></span></div></td></tr>
 
         <!-- 경비 (세부내역) -->
         <tr><td>경비</td><td><div class="amount-cell">
@@ -210,32 +198,14 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--gray-100); col
         </div></td></tr>
         <tr id="detail-equip-row" style="display:none;"><td colspan="2" style="padding:0;"><div class="detail-section" id="detail-equip"><div class="detail-empty">불러오는 중...</div></div></td></tr>
 
-        <!-- 석면조사비 -->
-        <tr><td>석면조사비</td><td><div class="amount-cell">
-          <span class="amount-text" id="c-survey"></span><span id="badge-survey"></span>
-          <input class="edit-input" id="i-survey" type="number" />
-          <button class="icon-btn" id="edit-survey" onclick="startEdit('survey')">✏️ 수정</button>
-          <button class="icon-btn save-btn" id="s-survey" onclick="saveEdit('survey','석면조사비')">저장</button>
-          <button class="icon-btn cancel-btn" id="x-survey" onclick="cancelEdit('survey')">취소</button>
-        </div></td></tr>
+        <!-- 석면조사비 (외주매입 실측, 확정) -->
+        <tr><td>석면조사비</td><td><div class="amount-cell"><span class="amount-text" id="c-survey"></span></div></td></tr>
 
-        <!-- 후측정비 -->
-        <tr><td>후측정비</td><td><div class="amount-cell">
-          <span class="amount-text" id="c-post"></span><span id="badge-post"></span>
-          <input class="edit-input" id="i-post" type="number" />
-          <button class="icon-btn" id="edit-post" onclick="startEdit('post')">✏️ 수정</button>
-          <button class="icon-btn save-btn" id="s-post" onclick="saveEdit('post','후측정비')">저장</button>
-          <button class="icon-btn cancel-btn" id="x-post" onclick="cancelEdit('post')">취소</button>
-        </div></td></tr>
+        <!-- 후측정비 (외주매입 실측, 확정) -->
+        <tr><td>후측정비</td><td><div class="amount-cell"><span class="amount-text" id="c-post"></span></div></td></tr>
 
-        <!-- 감리비 -->
-        <tr><td>감리비</td><td><div class="amount-cell">
-          <span class="amount-text" id="c-super"></span><span id="badge-super"></span>
-          <input class="edit-input" id="i-super" type="number" />
-          <button class="icon-btn" id="edit-super" onclick="startEdit('super')">✏️ 수정</button>
-          <button class="icon-btn save-btn" id="s-super" onclick="saveEdit('super','감리비')">저장</button>
-          <button class="icon-btn cancel-btn" id="x-super" onclick="cancelEdit('super')">취소</button>
-        </div></td></tr>
+        <!-- 감리비 (외주매입 실측, 확정) -->
+        <tr><td>감리비</td><td><div class="amount-cell"><span class="amount-text" id="c-super"></span></div></td></tr>
 
         <!-- 간접비 -->
         <tr class="indirect-row"><td>간접비 (공사금액의 <span id="indirect-rate-label">10</span>%)</td>
@@ -357,14 +327,14 @@ function renderReport(p) {
   document.getElementById('indirect-rate-label').textContent = indirectRate;
 
   setAmt('material', p['자재비']);
-  setAmtEditable('waste', p['폐기물처리비'], p['폐기물처리비확정']);
-  setAmtEditable('transport', p['운반비'], p['운반비확정']);
+  setAmt('waste', p['폐기물처리비']);
+  setAmt('transport', p['운반비']);
   setAmt('expense', p['경비']);
   setAmtEditable('labor', p['노무비'], p['노무비확정']);
   setAmt('equip', p['외주장비비']);
-  setAmtEditable('survey', p['석면조사비'], p['석면조사비확정']);
-  setAmtEditable('post', p['후측정비'], p['후측정비확정']);
-  setAmtEditable('super', p['감리비'], p['감리비확정']);
+  setAmt('survey', p['석면조사비']);
+  setAmt('post', p['후측정비']);
+  setAmt('super', p['감리비']);
   setAmt('indirect', p['간접비']);
   document.getElementById('c-total').textContent = fmtNum(total) + ' 원';
 
