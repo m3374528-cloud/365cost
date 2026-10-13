@@ -204,6 +204,9 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--gray-100); col
         <!-- 후측정비 (외주매입 실측, 확정) -->
         <tr><td>후측정비</td><td><div class="amount-cell"><span class="amount-text" id="c-post"></span></div></td></tr>
 
+        <!-- 비산측정 (외주매입 실측, 확정) -->
+        <tr><td>비산측정</td><td><div class="amount-cell"><span class="amount-text" id="c-scatter"></span></div></td></tr>
+
         <!-- 감리비 (외주매입 실측, 확정) -->
         <tr><td>감리비</td><td><div class="amount-cell"><span class="amount-text" id="c-super"></span></div></td></tr>
 
@@ -334,6 +337,7 @@ function renderReport(p) {
   setAmt('equip', p['외주장비비']);
   setAmt('survey', p['석면조사비']);
   setAmt('post', p['후측정비']);
+  setAmt('scatter', p['비산측정']);
   setAmt('super', p['감리비']);
   setAmt('indirect', p['간접비']);
   document.getElementById('c-total').textContent = fmtNum(total) + ' 원';
@@ -456,7 +460,7 @@ async function saveEdit(key, fieldName) {
 
 function recalcSummary() {
   const p = currentData;
-  const total = ['자재비','폐기물처리비','운반비','경비','노무비','외주장비비','석면조사비','후측정비','감리비','간접비'].reduce((s,f) => s+(Number(p[f])||0), 0);
+  const total = ['자재비','폐기물처리비','운반비','경비','노무비','외주장비비','석면조사비','후측정비','비산측정','감리비','간접비'].reduce((s,f) => s+(Number(p[f])||0), 0);
   const contract = Number(p['공사금액'])||0;
   const rate = contract ? (total/contract*100) : 0;
   const profit = contract - total;
