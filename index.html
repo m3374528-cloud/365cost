@@ -472,9 +472,24 @@ function recalcSummary() {
   document.getElementById('c-total').textContent = fmtNum(total)+' 원';
 }
 
+// PDF 저장 파일명 = 프로젝트번호_현장명 (인쇄 직전 문서 제목 교체 → 후 복원)
+function buildPrintTitle() {
+  const num = currentProjNum || (currentData && currentData['프로젝트번호']) || '';
+  const t = (num ? num + ' 원가분석 보고서' : '현장 원가분석 보고서').replace(/[\\/:*?"<>|]/g, ' ').trim();
+  return t;
+}
+function printWithTitle(fn) {
+  const orig = document.title;
+  document.title = buildPrintTitle();
+  const restore = () => { document.title = orig; window.removeEventListener('afterprint', restore); };
+  window.addEventListener('afterprint', restore);
+  setTimeout(restore, 1500); // afterprint 미발생 브라우저 대비
+  fn();
+}
+
 function printSummary() {
   document.querySelectorAll('.detail-section').forEach(el => el.classList.add('hide-print'));
-  window.print();
+  printWithTitle(() => window.print());
   setTimeout(() => document.querySelectorAll('.detail-section').forEach(el => el.classList.remove('hide-print')), 500);
 }
 
@@ -486,7 +501,7 @@ async function printDetail() {
     row.style.display=''; detailVisible[type]=true;
     renderDetail(type, container);
   });
-  setTimeout(() => window.print(), 300);
+  setTimeout(() => printWithTitle(() => window.print()), 300);
 }
 
 document.addEventListener('click', e => { if (!e.target.closest('.search-inner')) hideDrop(); });
