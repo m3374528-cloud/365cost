@@ -140,6 +140,8 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--gray-100); col
       </div>
     </div>
 
+    <div id="estBanner" style="display:none;background:#FFF3E0;color:#E65100;font-size:12px;font-weight:500;padding:9px 1.5rem;border-bottom:1px solid var(--gray-200);"></div>
+
     <div class="section">
       <div class="section-title">현장 기본정보</div>
       <table class="info-table">
@@ -167,11 +169,11 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--gray-100); col
         <!-- 자재비 -->
         <tr><td>자재비</td><td><div class="amount-cell"><span class="amount-text" id="c-material"></span></div></td></tr>
 
-        <!-- 폐기물처리비 (외주매입 실측, 확정) -->
-        <tr><td>폐기물처리비</td><td><div class="amount-cell"><span class="amount-text" id="c-waste"></span></div></td></tr>
+        <!-- 폐기물처리비 (외주매입: 예정/확정) -->
+        <tr><td>폐기물처리비</td><td><div class="amount-cell"><span class="amount-text" id="c-waste"></span><span id="st-waste"></span></div></td></tr>
 
-        <!-- 운반비 (외주매입 실측, 확정) -->
-        <tr><td>운반비</td><td><div class="amount-cell"><span class="amount-text" id="c-transport"></span></div></td></tr>
+        <!-- 운반비 (외주매입: 예정/확정) -->
+        <tr><td>운반비</td><td><div class="amount-cell"><span class="amount-text" id="c-transport"></span><span id="st-transport"></span></div></td></tr>
 
         <!-- 경비 (세부내역) -->
         <tr><td>경비</td><td><div class="amount-cell">
@@ -198,17 +200,17 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--gray-100); col
         </div></td></tr>
         <tr id="detail-equip-row" style="display:none;"><td colspan="2" style="padding:0;"><div class="detail-section" id="detail-equip"><div class="detail-empty">불러오는 중...</div></div></td></tr>
 
-        <!-- 석면조사비 (외주매입 실측, 확정) -->
-        <tr><td>석면조사비</td><td><div class="amount-cell"><span class="amount-text" id="c-survey"></span></div></td></tr>
+        <!-- 석면조사비 (외주매입: 예정/확정) -->
+        <tr><td>석면조사비</td><td><div class="amount-cell"><span class="amount-text" id="c-survey"></span><span id="st-survey"></span></div></td></tr>
 
-        <!-- 후측정비 (외주매입 실측, 확정) -->
-        <tr><td>후측정비</td><td><div class="amount-cell"><span class="amount-text" id="c-post"></span></div></td></tr>
+        <!-- 후측정비 (외주매입: 예정/확정) -->
+        <tr><td>후측정비</td><td><div class="amount-cell"><span class="amount-text" id="c-post"></span><span id="st-post"></span></div></td></tr>
 
-        <!-- 비산측정 (외주매입 실측, 확정) -->
-        <tr><td>비산측정</td><td><div class="amount-cell"><span class="amount-text" id="c-scatter"></span></div></td></tr>
+        <!-- 비산측정 (외주매입: 예정/확정) -->
+        <tr><td>비산측정</td><td><div class="amount-cell"><span class="amount-text" id="c-scatter"></span><span id="st-scatter"></span></div></td></tr>
 
-        <!-- 감리비 (외주매입 실측, 확정) -->
-        <tr><td>감리비</td><td><div class="amount-cell"><span class="amount-text" id="c-super"></span></div></td></tr>
+        <!-- 감리비 (외주매입: 예정/확정) -->
+        <tr><td>감리비</td><td><div class="amount-cell"><span class="amount-text" id="c-super"></span><span id="st-super"></span></div></td></tr>
 
         <!-- 간접비 -->
         <tr class="indirect-row"><td>간접비 (공사금액의 <span id="indirect-rate-label">10</span>%)</td>
@@ -330,17 +332,26 @@ function renderReport(p) {
   document.getElementById('indirect-rate-label').textContent = indirectRate;
 
   setAmt('material', p['자재비']);
-  setAmt('waste', p['폐기물처리비']);
-  setAmt('transport', p['운반비']);
+  setAmt('waste', p['폐기물처리비']);     setStatus('waste', p['폐기물처리비_상태']);
+  setAmt('transport', p['운반비']);       setStatus('transport', p['운반비_상태']);
   setAmt('expense', p['경비']);
   setAmtEditable('labor', p['노무비'], p['노무비확정']);
   setAmt('equip', p['외주장비비']);
-  setAmt('survey', p['석면조사비']);
-  setAmt('post', p['후측정비']);
-  setAmt('scatter', p['비산측정']);
-  setAmt('super', p['감리비']);
+  setAmt('survey', p['석면조사비']);      setStatus('survey', p['석면조사비_상태']);
+  setAmt('post', p['후측정비']);          setStatus('post', p['후측정비_상태']);
+  setAmt('scatter', p['비산측정']);       setStatus('scatter', p['비산측정_상태']);
+  setAmt('super', p['감리비']);           setStatus('super', p['감리비_상태']);
   setAmt('indirect', p['간접비']);
   document.getElementById('c-total').textContent = fmtNum(total) + ' 원';
+
+  // 상단 종합 표시: 외주매입 항목 중 하나라도 '추정'이면 전체 추정중
+  const stFields = ['폐기물처리비_상태','운반비_상태','석면조사비_상태','후측정비_상태','비산측정_상태','감리비_상태'];
+  const anyEst = stFields.some(f => p[f] === '추정');
+  const banner = document.getElementById('estBanner');
+  if (banner) {
+    if (anyEst) { banner.style.display='block'; banner.textContent='🔸 외주매입 일부가 예정(추정) 금액입니다 — 확정 전'; }
+    else { banner.style.display='none'; }
+  }
 
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('report').style.display = 'block';
@@ -351,6 +362,15 @@ function setAmt(key, val) {
   if (!el) return;
   el.textContent = (!val||val==0) ? '-' : Number(val).toLocaleString()+' 원';
   el.className = 'amount-text' + ((!val||val==0)?' zero':'');
+}
+
+// 외주매입 항목 예정/확정 뱃지
+function setStatus(key, status) {
+  const el = document.getElementById('st-'+key);
+  if (!el) return;
+  if (status === '추정') { el.className='badge-unconfirmed'; el.textContent='🔸 예정'; }
+  else if (status === '확정') { el.className='badge-confirmed'; el.textContent='✅ 확정'; }
+  else { el.className=''; el.textContent=''; }
 }
 
 function setAmtEditable(key, val, confirmed) {
