@@ -167,7 +167,11 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--gray-100); col
       <div class="section-title">비용 상세</div>
       <table class="cost-table">
         <!-- 자재비 -->
-        <tr><td>자재비</td><td><div class="amount-cell"><span class="amount-text" id="c-material"></span></div></td></tr>
+        <tr><td>자재비</td><td><div class="amount-cell">
+          <span class="amount-text" id="c-material"></span>
+          <button class="icon-btn detail-btn" onclick="toggleDetail('material')">🔍 세부내역</button>
+        </div></td></tr>
+        <tr id="detail-material-row" style="display:none;"><td colspan="2" style="padding:0;"><div class="detail-section" id="detail-material"><div class="detail-empty">불러오는 중...</div></div></td></tr>
 
         <!-- 폐기물처리비 (외주매입: 예정/확정) -->
         <tr><td>폐기물처리비</td><td><div class="amount-cell"><span class="amount-text" id="c-waste"></span><span id="st-waste"></span></div></td></tr>
@@ -238,7 +242,7 @@ const LOGOS = {
 
 let allProjects = [], currentProjNum = '', currentData = {};
 let detailData = null, detailLoaded = false;
-const detailVisible = { expense: false, labor: false, equip: false };
+const detailVisible = { expense: false, labor: false, equip: false, material: false };
 
 function fmt(n) { return (!n || n == 0) ? '-' : Number(n).toLocaleString() + ' 원'; }
 function fmtNum(n) { return (!n || n == 0) ? '-' : Number(n).toLocaleString(); }
@@ -283,7 +287,7 @@ function selectProj(num) {
   hideDrop();
   currentProjNum = num; currentData = {...p};
   detailData = null; detailLoaded = false;
-  ['expense','labor','equip'].forEach(k => {
+  ['expense','labor','equip','material'].forEach(k => {
     detailVisible[k] = false;
     document.getElementById(`detail-${k}-row`).style.display = 'none';
     document.getElementById(`detail-${k}`).innerHTML = '<div class="detail-empty">불러오는 중...</div>';
@@ -420,6 +424,12 @@ function renderDetail(type, container) {
       items.forEach(item => { html += `<div class="detail-item"><div class="detail-item-left">${item.name}</div><div class="detail-item-amount">${Number(item.rate)>0?Number(item.rate).toLocaleString()+' 원':'단가미등록'}</div></div>`; });
     } else if (type === 'equip') {
       items.forEach(item => { html += `<div class="detail-item"><div class="detail-item-left"><div>${item.type}</div><div class="detail-item-sub">${item.company}</div></div><div class="detail-item-amount">${Number(item.amount).toLocaleString()} 원</div></div>`; });
+    } else if (type === 'material') {
+      items.forEach(item => {
+        const qtyUnit = item.qty + (item.unit || '');
+        const amt = (item.known && item.amount !== '') ? Number(item.amount).toLocaleString()+' 원' : '단가미등록';
+        html += `<div class="detail-item"><div class="detail-item-left"><div>${item.name}</div><div class="detail-item-sub">${qtyUnit}</div></div><div class="detail-item-amount">${amt}</div></div>`;
+      });
     }
     html += '</div>';
   });
@@ -515,7 +525,7 @@ function printSummary() {
 
 async function printDetail() {
   if (!detailLoaded) await loadDetail();
-  ['expense','labor','equip'].forEach(type => {
+  ['expense','labor','equip','material'].forEach(type => {
     const row = document.getElementById(`detail-${type}-row`);
     const container = document.getElementById(`detail-${type}`);
     row.style.display=''; detailVisible[type]=true;
