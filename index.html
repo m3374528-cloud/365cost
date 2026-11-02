@@ -505,7 +505,10 @@ function recalcSummary() {
 // PDF 저장 파일명 = 프로젝트번호_현장명 (인쇄 직전 문서 제목 교체 → 후 복원)
 function buildPrintTitle() {
   const num = currentProjNum || (currentData && currentData['프로젝트번호']) || '';
-  const t = (num ? num + ' 원가분석 보고서' : '현장 원가분석 보고서').replace(/[\\/:*?"<>|]/g, ' ').trim();
+  const biz = (currentData && currentData['사업장']) || '';
+  const name = (currentData && currentData['현장명']) || '';
+  const parts = [num, biz, name].filter(Boolean).join('_');
+  const t = (parts || '현장 원가분석 보고서').replace(/[\\/:*?"<>|]/g, ' ').trim();
   return t;
 }
 function printWithTitle(fn) {
