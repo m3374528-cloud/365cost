@@ -186,14 +186,10 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--gray-100); col
         </div></td></tr>
         <tr id="detail-expense-row" style="display:none;"><td colspan="2" style="padding:0;"><div class="detail-section" id="detail-expense"><div class="detail-empty">불러오는 중...</div></div></td></tr>
 
-        <!-- 노무비 (세부내역 + 수정) -->
+        <!-- 노무비 (세부내역만, 읽기전용 — 수정은 구글시트에서) -->
         <tr><td>노무비</td><td><div class="amount-cell">
           <span class="amount-text" id="c-labor"></span><span id="badge-labor"></span>
           <button class="icon-btn detail-btn" onclick="toggleDetail('labor')">🔍 세부내역</button>
-          <input class="edit-input" id="i-labor" type="number" />
-          <button class="icon-btn" id="edit-labor" onclick="startEdit('labor')">✏️ 수정</button>
-          <button class="icon-btn save-btn" id="s-labor" onclick="saveEdit('labor','노무비')">저장</button>
-          <button class="icon-btn cancel-btn" id="x-labor" onclick="cancelEdit('labor')">취소</button>
         </div></td></tr>
         <tr id="detail-labor-row" style="display:none;"><td colspan="2" style="padding:0;"><div class="detail-section" id="detail-labor"><div class="detail-empty">불러오는 중...</div></div></td></tr>
 
@@ -384,9 +380,9 @@ function setAmtEditable(key, val, confirmed) {
   el.textContent = (!val||val==0) ? '-' : Number(val).toLocaleString()+' 원';
   el.className = 'amount-text' + ((!val||val==0)?' zero':'');
   if (badge) {
-    const isConfirmed = String(confirmed) === 'Y';
-    badge.className = isConfirmed ? 'badge-confirmed' : 'badge-unconfirmed';
-    badge.textContent = isConfirmed ? '✅ 확정' : '🔸 미확정';
+    // 노무비는 확정/미확정 표시 안 함 (면님이 내역 받아 직접 확정하므로)
+    badge.className = '';
+    badge.textContent = '';
   }
 }
 
