@@ -91,10 +91,30 @@ tr.big td.num{font-size:14px}
 .btn-solid{background:var(--navy);border:1px solid var(--navy);color:#fff}
 .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--g900);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1}
+.viewbar{display:flex;align-items:center;gap:8px;padding:10px 1.25rem;border-bottom:1px solid var(--g200);flex-wrap:wrap}
+.viewbar .lbl{font-size:12px;color:var(--g400)}
+.seg{display:inline-flex;border:1px solid var(--g200);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:#fff;padding:6px 14px;font-size:13px;font-family:inherit;color:var(--g700);cursor:pointer}
+.seg button+button{border-left:1px solid var(--g200)}
+.seg button.on{background:var(--navy);color:#fff;font-weight:500}
+.view-label{font-size:11px;color:var(--navy);margin-top:2px;font-weight:500}
+body.v-direct .full-only{display:none!important}
+body:not(.v-direct) .direct-only{display:none!important}
+.unl{background:#FFF8E1;border:1px solid #F3E0A6;border-radius:var(--r);margin-bottom:1rem;font-size:12px;color:#7A5B00}
+.unl-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;line-height:1.5}
+.unl-head button{border:1px solid #E6CF85;background:#fff;border-radius:6px;padding:3px 10px;font-size:12px;font-family:inherit;color:#7A5B00;cursor:pointer;white-space:nowrap}
+.unl-list{border-top:1px solid #F3E0A6;display:none}
+.unl.open .unl-list{display:block}
+.unl-item{display:flex;justify-content:space-between;gap:10px;padding:8px 14px;border-bottom:1px solid #F7EBC4}
+.unl-item:last-child{border-bottom:none}
+.unl-item .pn{font-family:'IBM Plex Mono',monospace;font-weight:600;word-break:break-all}
+.unl-item .sub{color:#A68A3A;font-size:11px;margin-top:1px}
+.unl-item .amt{font-family:'IBM Plex Mono',monospace;white-space:nowrap}
+.unl-tip{padding:8px 14px 10px;color:#A68A3A;font-size:11px;border-top:1px solid #F3E0A6}
 @media(max-width:480px){td{padding-left:1rem;padding-right:1rem}.section-title,.site-head,.metric,.banner,.foot{padding-left:1rem;padding-right:1rem}.in{width:96px}.in.memo{width:76px}.report-header{padding:1rem}}
 @media print{
   body{background:#fff}
-  .search-wrap,.btn-row,.detail-btn,.save,.toast{display:none!important}
+  .search-wrap,.btn-row,.detail-btn,.save,.toast,.viewbar,.unl{display:none!important}
   .main{padding:0}.report{box-shadow:none;border-radius:0}
   .in{border:none;background:none;padding:0}
   .detail-section.hide-print{display:none!important}
@@ -112,6 +132,7 @@ tr.big td.num{font-size:14px}
 </div></div>
 
 <div class="main">
+  <div id="unlinked" class="unl" style="display:none;"></div>
   <div id="emptyState" class="empty">
     <div class="empty-icon">🔍</div>
     <p id="emptyMsg">불러오는 중...</p>
@@ -120,7 +141,7 @@ tr.big td.num{font-size:14px}
   <div id="report" class="report" style="display:none;">
     <div class="report-header">
       <div class="logo-wrap"><img id="logoImg" src="" alt="로고" onerror="this.style.display='none'" /></div>
-      <div class="header-center"><h1>현장 원가분석 보고서</h1><div class="biz-name" id="headerBiz"></div></div>
+      <div class="header-center"><h1>현장 원가분석 보고서</h1><div class="biz-name" id="headerBiz"></div><div class="view-label" id="viewLabel"></div></div>
       <div class="header-right"><div id="headerDate"></div><div id="headerNum" class="mono" style="font-size:11px;margin-top:2px;"></div></div>
     </div>
     <div id="banners"></div>
@@ -130,6 +151,13 @@ tr.big td.num{font-size:14px}
       <div class="nm" id="h-name"></div>
       <div class="meta" id="h-meta"></div>
     </div>
+    <div class="viewbar">
+      <span class="lbl">보기</span>
+      <div class="seg">
+        <button id="vb-direct" onclick="setView('direct')">직접원가만</button>
+        <button id="vb-full" onclick="setView('full')">전체 원가 (①+②+③)</button>
+      </div>
+    </div>
     <div class="grid" id="top"></div>
 
     <div class="section-title">계약금액</div>
@@ -137,14 +165,17 @@ tr.big td.num{font-size:14px}
 
     <div class="section-title">① 직접원가 <span>이 현장에서 실제로 나간 돈</span></div>
     <table id="t-direct"></table>
+    <table id="t-directprofit" class="direct-only"></table>
 
-    <div class="section-title">② 현장 공통비 <span>공수 × 단가로 나눠 담은 돈</span></div>
-    <table id="t-common"></table>
+    <div class="full-only">
+      <div class="section-title">② 현장 공통비 <span>공수 × 단가로 나눠 담은 돈</span></div>
+      <table id="t-common"></table>
 
-    <table id="t-siteprofit"></table>
+      <table id="t-siteprofit"></table>
 
-    <div class="section-title">③ 본사관리비 <span>급여·임대료·차량 등 — 최근 3개월 실제 비율로 배부</span></div>
-    <table id="t-overhead"></table>
+      <div class="section-title">③ 본사관리비 <span>급여·임대료·차량 등 — 최근 3개월 실제 비율로 배부</span></div>
+      <table id="t-overhead"></table>
+    </div>
 
     <div class="section-title">이 현장 예상 납부세액</div>
     <table id="t-vat"></table>
@@ -171,6 +202,21 @@ const DETAIL_TYPES = ['labor','transport','equip','out','material','expense'];
 let allProjects = [], currentProjNum = '', cur = null;
 let detailData = null, detailLoaded = false;
 const detailVisible = {};
+let view = 'full';   // 'direct' = ①만, 'full' = ①+②+③
+try { const v = localStorage.getItem('costView'); if (v === 'direct' || v === 'full') view = v; } catch (e) {}
+
+function setView(v) {
+  view = v;
+  try { localStorage.setItem('costView', v); } catch (e) {}
+  applyView();
+  if (cur) renderReport();
+}
+function applyView() {
+  document.body.classList.toggle('v-direct', view === 'direct');
+  ['direct', 'full'].forEach(k => { const b = document.getElementById('vb-' + k); if (b) b.classList.toggle('on', view === k); });
+  const vl = document.getElementById('viewLabel');
+  if (vl) vl.textContent = view === 'direct' ? '직접원가만 보기' : '전체 원가 (직접원가 + 공통비 + 본사관리비)';
+}
 
 const n0 = v => Number(v) || 0;
 const f = v => Math.round(n0(v)).toLocaleString('ko-KR');
@@ -195,9 +241,28 @@ async function loadProjects() {
         .filter(p => p['조회대상'] === 'Y')
         .sort((a, b) => String(b['마지막작업일'] || '9999').localeCompare(String(a['마지막작업일'] || '9999')));
       renderDropdown(allProjects);
+      renderUnlinked(json.unlinked || []);
       document.getElementById('emptyMsg').textContent = '프로젝트번호 또는 현장명을 검색해주세요';
     } else document.getElementById('emptyMsg').textContent = '불러오지 못했어요: ' + (json.message || '');
   } catch (e) { console.error(e); document.getElementById('emptyMsg').textContent = '불러오지 못했어요. 새로고침 해주세요'; }
+}
+
+function renderUnlinked(list) {
+  const box = document.getElementById('unlinked');
+  if (!list.length) { box.style.display = 'none'; return; }
+  const total = list.reduce((t, u) => t + n0(u.amount), 0);
+  const cnt = list.reduce((t, u) => t + n0(u.count), 0);
+  const range = u => u.from ? (md(u.from) + (u.to && u.to !== u.from ? '~' + md(u.to) : '')) : '날짜 확인 필요';
+  box.innerHTML = `
+    <div class="unl-head"><div>⚠️ 어느 현장에도 연결 안 된 입력 <b>${cnt}건</b>${total ? ` · 합계 <b>${f(total)}원</b>` : ''} — 원가에 빠져 있어요</div>
+      <button onclick="document.getElementById('unlinked').classList.toggle('open')">목록</button></div>
+    <div class="unl-list">
+      ${list.map(u => `<div class="unl-item"><div><div class="pn">${esc(u.pn)}</div>
+        <div class="sub">${esc(u.tab)} · ${range(u)} · ${u.count}건${u.name ? ' · ' + esc(u.name) : ''}</div></div>
+        <div class="amt">${u.amount ? f(u.amount) + '원' : '-'}</div></div>`).join('')}
+      <div class="unl-tip">구글시트 해당 탭에서 프로젝트번호를 프로젝트목록과 같게 고치면 사라져요 (업체번호_차수 앞부분만 같으면 돼요)</div>
+    </div>`;
+  box.style.display = '';
 }
 
 function renderDropdown(list) {
@@ -280,7 +345,13 @@ function renderReport() {
   document.getElementById('banners').innerHTML = bn.map(b => `<div class="banner ${b[0]}">${b[1]}</div>`).join('');
 
   // 상단 요약
-  document.getElementById('top').innerHTML = `
+  const directProfit = c.supply - c.direct;
+  if (view === 'direct') document.getElementById('top').innerHTML = `
+    <div class="metric"><div class="metric-label">공급가액</div><div class="metric-value">${won(c.supply)}</div></div>
+    <div class="metric"><div class="metric-label">직접원가</div><div class="metric-value">${won(c.direct)}</div><div class="metric-sub">원가율 ${pct(c.direct, c.supply)}</div></div>
+    <div class="metric"><div class="metric-label">직접원가 기준 이익</div><div class="metric-value ${directProfit < 0 ? 'neg' : 'pos'}">${won(directProfit)}</div><div class="metric-sub">${pct(directProfit, c.supply)}</div></div>
+    <div class="metric"><div class="metric-label">예상 납부세액</div><div class="metric-value">${won(n0(p['매출세액']) - n0(p['매입세액']))}</div><div class="metric-sub">매출세액 − 매입세액</div></div>`;
+  else document.getElementById('top').innerHTML = `
     <div class="metric"><div class="metric-label">공급가액</div><div class="metric-value">${won(c.supply)}</div></div>
     <div class="metric"><div class="metric-label">직접원가 + 공통비</div><div class="metric-value">${won(c.direct + c.common)}</div><div class="metric-sub">원가율 ${pct(c.direct + c.common, c.supply)}</div></div>
     <div class="metric"><div class="metric-label">현장이익</div><div class="metric-value ${c.siteProfit < 0 ? 'neg' : 'pos'}">${won(c.siteProfit)}</div><div class="metric-sub">${pct(c.siteProfit, c.supply)}</div></div>
@@ -309,6 +380,10 @@ function renderReport() {
     row('소모품' + dbtn('material'), p['자재비']) + detailRow('material') +
     row('경비카드' + dbtn('expense'), p['경비']) + detailRow('expense') +
     row('직접원가 합계', c.direct, { cls: 'sub', keep: true });
+
+  document.getElementById('t-directprofit').innerHTML =
+    row('직접원가 기준 이익', directProfit, { cls: 'big', keep: true, eq: '공급가액 − ①', numCls: directProfit < 0 ? 'neg' : 'pos',
+      html: `${fs(directProfit)}<span class="pct">(${pct(directProfit, c.supply)})</span>` });
 
   // ② 공통비
   const cb = p['공통비근거'] || {};
@@ -412,7 +487,7 @@ function renderDetail(type) {
 // PDF 저장 파일명 = 프로젝트번호_사업장_현장명
 function buildPrintTitle() {
   const parts = [currentProjNum, cur && cur['사업장'], cur && cur['현장명']].filter(Boolean).join('_');
-  return (parts || '현장 원가분석 보고서').replace(/[\\/:*?"<>|]/g, ' ').trim();
+  return ((parts || '현장 원가분석 보고서') + (view === 'direct' ? '_직접원가' : '')).replace(/[\\/:*?"<>|]/g, ' ').trim();
 }
 function printWithTitle(fn) {
   const orig = document.title;
@@ -438,6 +513,7 @@ async function printDetail() {
 }
 
 document.addEventListener('click', e => { if (!e.target.closest('.search-inner')) hideDrop(); });
+applyView();
 loadProjects();
 </script>
 </body>
