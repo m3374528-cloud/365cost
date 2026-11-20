@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>부가세 현황</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1E3A5F;--g50:#F8F9FA;--g100:#F1F3F4;--g200:#E8EAED;--g400:#9AA0A6;--g700:#3C4043;--g900:#1A1A1A;--r:10px;--green:#2E7D32;--red:#C62828;--orange:#E65100;--purch:#7A9CC6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--g100);color:var(--g900);min-height:100vh}
+.mono{font-family:'IBM Plex Mono',monospace}
+.top{background:#fff;border-bottom:1px solid var(--g200);padding:.9rem 1rem;position:sticky;top:0;z-index:50}
+.top-in{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.top h1{font-size:16px;font-weight:600;flex:1;min-width:110px}
+.seg{display:flex;gap:6px}
+.seg button{border:1px solid var(--g200);background:#fff;border-radius:20px;padding:6px 14px;font-size:13px;cursor:pointer;font-family:inherit;color:var(--g700)}
+.seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.main{max-width:860px;margin:0 auto;padding:1.25rem 1rem}
+.card{background:#fff;border-radius:var(--r);box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden}
+.chips{display:flex;gap:6px;padding:10px 1.25rem;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--g200)}
+.chips .lb{font-size:12px;color:var(--g400);margin-right:2px}
+.chip{border:1px solid var(--g200);background:#fff;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:var(--g700)}
+.chip.on{background:#E8EEF6;color:var(--navy);border-color:var(--navy);font-weight:600}
+.info{margin:12px 1.25rem 0;font-size:12px;color:var(--navy);background:#E8EEF6;border-radius:8px;padding:8px 12px;line-height:1.6}
+.note{margin:12px 1.25rem 0;font-size:12px;color:var(--orange);background:#FFF3E0;border-radius:8px;padding:8px 12px;line-height:1.6}
+.warn{margin:12px 1.25rem 0;font-size:13px;color:#C62828;background:#FDECEA;border:1px solid #F3C2BD;border-radius:8px;padding:9px 12px;line-height:1.6;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);margin-top:12px}
+@media(min-width:600px){.grid{grid-template-columns:repeat(4,1fr)}}
+.metric{padding:1rem 1.25rem;border-top:1px solid var(--g200);border-right:1px solid var(--g200)}
+.metric:nth-child(2n){border-right:none}
+@media(min-width:600px){.metric:nth-child(2n){border-right:1px solid var(--g200)}.metric:last-child{border-right:none}}
+.metric-label{font-size:11px;color:var(--g400);margin-bottom:6px;font-weight:500}
+.metric-value{font-size:16px;font-weight:600;white-space:nowrap}
+.metric-sub{font-size:11px;color:var(--g400);margin-top:4px}
+.neg{color:var(--red)}.pos{color:var(--green)}.nv{color:var(--navy)}
+.section-title{font-size:12px;font-weight:600;color:var(--g400);letter-spacing:.5px;padding:10px 1.25rem;background:var(--g50);border-bottom:1px solid var(--g200);border-top:1px solid var(--g200)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:11px 1.25rem;border-bottom:1px solid var(--g100);text-align:right}
+td:first-child{text-align:left;color:var(--g700);font-size:13px}
+td.num{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:13px;white-space:nowrap}
+td small{display:block;font-size:11px;color:var(--g400);font-weight:400;margin-top:2px}
+tr.big td{background:#EAF0F8;font-weight:600}
+.bar-wrap{padding:6px 1.25rem 14px}
+.brow{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:12px}
+.brow .bl{width:150px;flex-shrink:0;color:var(--g700);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .bt{flex:1;height:10px;background:var(--g100);border-radius:6px;overflow:hidden}
+.brow .bf{height:100%;background:var(--purch);border-radius:6px}
+.brow .bv{width:104px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px}
+@media(max-width:480px){.brow .bl{width:90px}td{padding-left:1rem;padding-right:1rem}.chips,.section-title,.bar-wrap{padding-left:1rem;padding-right:1rem}.info,.note,.warn{margin-left:1rem;margin-right:1rem}.metric{padding:.9rem 1rem}.metric-value{font-size:15px}}
+.foot{font-size:11px;color:var(--g400);padding:10px 1.25rem 14px;line-height:1.75}
+.nodata{padding:3rem 1.25rem;text-align:center;color:var(--g400);font-size:13px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="top"><div class="top-in">
+  <h1>부가세 현황</h1>
+  <div class="seg" id="bizSeg"></div>
+</div></div>
+<div class="main"><div class="card" id="body"><div class="nodata">불러오는 중...</div></div></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbzNI4xmJT7kaA06gosQ2BE6kg8i5i1M-z_4tq3jsr32-nftkN0sH86ox9xEmVo0oe9IoQ/exec';
+const BIZ = [['삼육오컴퍼니', '컴퍼니'], ['철거인', '철거인']];
+let D = null, biz = BIZ[0][0], mon = null;
+
+const n0 = v => Number(v) || 0;
+const f = v => Math.round(n0(v)).toLocaleString('ko-KR');
+const fs = v => (n0(v) < 0 ? '−' : '') + f(Math.abs(n0(v)));
+const won = v => fs(v) + '원';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const md = d => d ? (+d.slice(5, 7)) + '/' + (+d.slice(8, 10)) : '-';
+const dayDiff = (a, b) => Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
+
+async function load() {
+  try {
+    const r = await fetch(API + '?action=getVatStatus'); const j = await r.json();
+    if (j.result !== 'success') throw new Error(j.message || 'error');
+    D = j.data;
+    render();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('body').innerHTML = '<div class="nodata">불러오지 못했어요.<br>새로고침 해주세요.</div>';
+  }
+}
+function selBiz(b) { biz = b; mon = null; render(); }
+function selMon(m) { mon = m; render(); }
+
+function render() {
+  document.getElementById('bizSeg').innerHTML = BIZ.map(b => `<button class="${biz === b[0] ? 'on' : ''}" onclick="selBiz('${b[0]}')">${b[1]}</button>`).join('');
+  const el = document.getElementById('body');
+  const months = Object.keys((D.bizs || {})[biz] || {}).sort();
+  if (!months.length) {
+    const what = biz === '철거인' ? '철거인' : '삼육오컴퍼니';
+    el.innerHTML = `<div class="nodata">${what} 자료가 아직 없어요.<br>경리나라에서 <b>${what}</b>의 매출·매입 세금계산서 엑셀을 받아<br>구글시트 <b>붙여넣기_${biz === '철거인' ? '철거인' : '컴퍼니'}</b> 탭에 붙여넣고<br>메뉴 <b>📥 경리나라 → 붙여넣기 반영하기</b>를 눌러 주세요.<br><span style="font-size:12px">(부가세 신고가 사업장별이라 따로 집계해요)</span></div>`;
+    return;
+  }
+  if (!mon || !months.includes(mon)) mon = months[months.length - 1];
+  const B = D.bizs[biz], x = B[mon];
+  const pay = x.sv - x.pv, rate = x.ss ? x.ps / x.ss * 100 : 0;
+  const y = +mon.slice(0, 4), mm = +mon.slice(5), q = Math.floor((mm - 1) / 3) + 1;
+  const qm = months.filter(k => +k.slice(0, 4) === y && Math.floor((+k.slice(5) - 1) / 3) + 1 === q && k <= mon);
+  const qs = qm.reduce((a, k) => a + B[k].sv, 0), qp = qm.reduce((a, k) => a + B[k].pv, 0);
+  const em = q * 3, dueY = em === 12 ? y + 1 : y, dueM = em === 12 ? 1 : em + 1;
+  const due = `${dueY}-${String(dueM).padStart(2, '0')}-25`;
+  const dd = dayDiff(D.today, due);
+  const dueTxt = `${dueM}월 25일` + (dd >= 0 ? ` (D-${dd})` : ` (${-dd}일 지남)`);
+
+  // 자료 최신성
+  const lat = (D.latest || {})[biz] || {}, ap = ((D.applied || {})[biz] || '');
+  const age = ap ? dayDiff(ap.slice(0, 10), D.today) : null;
+  const fresh = `<div class="info">경리나라 자료 · 마지막 반영 <b>${ap ? md(ap.slice(0, 10)) : '-'}</b> · 마지막 계산서 일자 매출 <b>${md(lat.sales)}</b> / 매입 <b>${md(lat.purch)}</b></div>`;
+  const stale = (age !== null && age >= 8) ? `<div class="warn">⚠️ 마지막 반영이 ${age}일 전이에요. 이번 주 경리나라 엑셀을 붙여넣어 주세요.</div>` : '';
+
+  // 진행 중인 달 안내
+  let nt = '';
+  if (mon === D.today.slice(0, 7)) {
+    const pm = months[months.indexOf(mon) - 1];
+    const pr = pm && B[pm].ss ? ` 지난달(${+pm.slice(5)}월) 매입률은 <b>${(B[pm].ps / B[pm].ss * 100).toFixed(1)}%</b>였어요.` : '';
+    nt = `<div class="note">ⓘ 월취합 계산서는 보통 월말에 발행돼서, 진행 중인 달은 매입이 낮게 보여요.${pr}</div>`;
+  }
+  const grp = Object.entries(x.grp).sort((a, b) => b[1][0] - a[1][0]), gmax = Math.max(...grp.map(g => g[1][0]), 1);
+  const ex = Object.values(x.excl || {}).reduce((a, v) => a + n0(v), 0);
+  const exTxt = ex ? `<br>· 세금계산서가 아닌 건(현금영수증·계산서 등) ${f(ex)}원은 이 계산에서 빠져 있어요` : '';
+  const payLabel = pay < 0 ? '예상 환급세액' : '예상 납부세액';
+
+  el.innerHTML = `
+   <div class="chips"><span class="lb">월</span>${months.map(k => `<button class="chip ${mon === k ? 'on' : ''}" onclick="selMon('${k}')">${+k.slice(5)}월</button>`).join('')}</div>
+   ${fresh}${stale}${nt}
+   <div class="grid">
+    <div class="metric"><div class="metric-label">매출세액</div><div class="metric-value mono">${won(x.sv)}</div><div class="metric-sub">${x.sn}건</div></div>
+    <div class="metric"><div class="metric-label">매입세액</div><div class="metric-value mono">${won(x.pv)}</div><div class="metric-sub">${x.pn}건</div></div>
+    <div class="metric"><div class="metric-label">${payLabel}</div><div class="metric-value mono ${pay < 0 ? 'pos' : 'neg'}">${won(Math.abs(pay))}</div><div class="metric-sub">매출세액 − 매입세액</div></div>
+    <div class="metric"><div class="metric-label">매입률</div><div class="metric-value mono nv">${rate.toFixed(1)}%</div><div class="metric-sub">매입 ÷ 매출 (공급가액)</div></div>
+   </div>
+   <div class="section-title">${q}분기 누계 (${qm.map(k => +k.slice(5) + '월').join('+')})</div>
+   <table>
+    <tr><td>매출세액</td><td class="num">${fs(qs)}</td></tr>
+    <tr><td>매입세액</td><td class="num">${fs(qp)}</td></tr>
+    <tr class="big"><td>${qs - qp < 0 ? '예상 환급세액' : '예상 납부세액'}<small>신고·납부 ${dueTxt}</small></td><td class="num nv">${fs(Math.abs(qs - qp))}</td></tr>
+   </table>
+   <div class="section-title">매입 구성 (공급가액)</div>
+   <div class="bar-wrap">${grp.length ? grp.map(g => `<div class="brow"><div class="bl">${esc(g[0])}</div><div class="bt"><div class="bf" style="width:${g[1][0] / gmax * 100}%"></div></div><div class="bv">${won(g[1][0])}</div></div>`).join('') : '<div style="font-size:12px;color:var(--g400);padding:6px 0">이 달 매입 세금계산서가 없어요</div>'}</div>
+   <div class="foot">· 세금계산서만 반영 (공급가액 = 금액 ÷ 1.1) · ${+D.start.slice(5)}월부터 표시 (이전 달은 분기 마감)${exTxt}<br>
+   · 카드·현금영수증 매입세액, 예정고지·공제 등은 넣지 않아 실제 납부세액과 다를 수 있어요. 세무사 사무실 확인 기준이 우선이에요.</div>`;
+}
+load();
+</script>
+</body>
+</html>
